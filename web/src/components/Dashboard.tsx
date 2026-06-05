@@ -24,6 +24,33 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { generateExecutivePDFReport } from "@/lib/export";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from "recharts";
+
+const categoryChartConfig = {
+  value: {
+    label: "Valor Total",
+    color: "var(--primary)",
+  },
+} satisfies ChartConfig;
+
+const providerChartConfig = {
+  value: {
+    label: "Valor Total",
+    color: "oklch(0.6 0.2 300)",
+  },
+} satisfies ChartConfig;
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -167,9 +194,6 @@ export function Dashboard() {
 
   const lowStockProducts = (dashboardData as any)?.lowStockProducts || [];
   const recentProducts = (dashboardData as any)?.recentProducts || [];
-
-  const maxCategoryValue = Math.max(...stats.categoryStats.map(s => s.value), 1);
-  const maxProviderValue = Math.max(...stats.providerStats.map(s => s.value), 1);
 
   return (
     <div id="dashboard-pdf-content" className="flex flex-col gap-6 p-6 bg-background text-foreground animate-fade-in duration-300">
@@ -357,7 +381,7 @@ export function Dashboard() {
             </div>
             <CardDescription className="text-xs">Distribución de costo y productos</CardDescription>
           </CardHeader>
-          <CardContent className="pt-4 flex flex-col gap-4">
+          <CardContent className="pt-4">
             {loading ? (
               <div className="space-y-3">
                 <Skeleton className="h-7 w-full" />
@@ -367,26 +391,72 @@ export function Dashboard() {
             ) : stats.categoryStats.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">No hay categorías registradas.</div>
             ) : (
-              <div className="flex flex-col gap-3.5">
-                {stats.categoryStats.slice(0, 5).map((stat) => {
-                  const percentage = maxCategoryValue > 0 ? (stat.value / maxCategoryValue) * 100 : 0;
-                  return (
-                    <div key={stat.name} className="flex flex-col gap-1.5">
-                      <div className="flex justify-between text-xs font-semibold text-foreground">
-                        <span className="truncate max-w-[180px]">{stat.name}</span>
-                        <span className="font-mono text-muted-foreground text-[11px]">
-                          {stat.count} {stat.count === 1 ? "prod" : "prods"} · <strong className="text-primary">${stat.value.toLocaleString("en-US", { maximumFractionDigits: 0 })}</strong>
-                        </span>
-                      </div>
-                      <div className="h-2.5 w-full bg-muted/30 rounded-full overflow-hidden">
-                        <div 
-                          style={{ width: `${percentage}%` }} 
-                          className="h-full bg-gradient-to-r from-primary to-sky-400 rounded-full transition-all duration-500 shadow-sm" 
+              <div className="max-h-[400px] overflow-y-auto pr-1">
+                <ChartContainer
+                  config={categoryChartConfig}
+                  style={{ height: `${Math.max(260, stats.categoryStats.length * 45)}px` }}
+                  className="w-full aspect-auto"
+                >
+                  <BarChart
+                    data={stats.categoryStats}
+                    layout="vertical"
+                    margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                  >
+                    <defs>
+                      <linearGradient id="categoryGrad" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.85} />
+                        <stop offset="100%" stopColor="oklch(0.7 0.15 220)" stopOpacity={1} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid horizontal={false} strokeDasharray="3 3" className="stroke-border/40" />
+                    <XAxis
+                      type="number"
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => `$${value.toLocaleString()}`}
+                      tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
+                    />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      tickLine={false}
+                      axisLine={false}
+                      width={100}
+                      tick={{ fill: "var(--foreground)", fontSize: 11, fontWeight: 500 }}
+                    />
+                    <ChartTooltip
+                      cursor={{ fill: "var(--muted)", opacity: 0.15 }}
+                      content={
+                        <ChartTooltipContent
+                          hideLabel
+                          formatter={(value, _, item) => (
+                            <div className="flex flex-col gap-0.5 min-w-[160px]">
+                              <span className="font-bold text-foreground text-xs">{item.payload.name}</span>
+                              <div className="flex justify-between text-[11px] mt-1 border-t border-border/40 pt-1">
+                                <span className="text-muted-foreground">Valor Total:</span>
+                                <span className="font-mono font-bold text-primary">
+                                  ${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
+                              </div>
+                              <div className="flex justify-between text-[11px]">
+                                <span className="text-muted-foreground">Productos:</span>
+                                <span className="font-mono text-muted-foreground">
+                                  {item.payload.count} {item.payload.count === 1 ? "unidad" : "unidades"}
+                                </span>
+                              </div>
+                            </div>
+                          )}
                         />
-                      </div>
-                    </div>
-                  );
-                })}
+                      }
+                    />
+                    <Bar
+                      dataKey="value"
+                      fill="url(#categoryGrad)"
+                      radius={[0, 6, 6, 0]}
+                      barSize={16}
+                    />
+                  </BarChart>
+                </ChartContainer>
               </div>
             )}
           </CardContent>
@@ -403,7 +473,7 @@ export function Dashboard() {
             </div>
             <CardDescription className="text-xs">Distribución de costo y productos</CardDescription>
           </CardHeader>
-          <CardContent className="pt-4 flex flex-col gap-4">
+          <CardContent className="pt-4">
             {loading ? (
               <div className="space-y-3">
                 <Skeleton className="h-7 w-full" />
@@ -413,26 +483,72 @@ export function Dashboard() {
             ) : stats.providerStats.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">No hay proveedores registrados.</div>
             ) : (
-              <div className="flex flex-col gap-3.5">
-                {stats.providerStats.slice(0, 5).map((stat) => {
-                  const percentage = maxProviderValue > 0 ? (stat.value / maxProviderValue) * 100 : 0;
-                  return (
-                    <div key={stat.name} className="flex flex-col gap-1.5">
-                      <div className="flex justify-between text-xs font-semibold text-foreground">
-                        <span className="truncate max-w-[180px]">{stat.name}</span>
-                        <span className="font-mono text-muted-foreground text-[11px]">
-                          {stat.count} {stat.count === 1 ? "prod" : "prods"} · <strong className="text-purple-500">${stat.value.toLocaleString("en-US", { maximumFractionDigits: 0 })}</strong>
-                        </span>
-                      </div>
-                      <div className="h-2.5 w-full bg-muted/30 rounded-full overflow-hidden">
-                        <div 
-                          style={{ width: `${percentage}%` }} 
-                          className="h-full bg-gradient-to-r from-purple-500 to-indigo-400 rounded-full transition-all duration-500 shadow-sm" 
+              <div className="max-h-[400px] overflow-y-auto pr-1">
+                <ChartContainer
+                  config={providerChartConfig}
+                  style={{ height: `${Math.max(260, stats.providerStats.length * 45)}px` }}
+                  className="w-full aspect-auto"
+                >
+                  <BarChart
+                    data={stats.providerStats}
+                    layout="vertical"
+                    margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                  >
+                    <defs>
+                      <linearGradient id="providerGrad" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="oklch(0.6 0.2 300)" stopOpacity={0.85} />
+                        <stop offset="100%" stopColor="oklch(0.7 0.15 320)" stopOpacity={1} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid horizontal={false} strokeDasharray="3 3" className="stroke-border/40" />
+                    <XAxis
+                      type="number"
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => `$${value.toLocaleString()}`}
+                      tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
+                    />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      tickLine={false}
+                      axisLine={false}
+                      width={100}
+                      tick={{ fill: "var(--foreground)", fontSize: 11, fontWeight: 500 }}
+                    />
+                    <ChartTooltip
+                      cursor={{ fill: "var(--muted)", opacity: 0.15 }}
+                      content={
+                        <ChartTooltipContent
+                          hideLabel
+                          formatter={(value, _, item) => (
+                            <div className="flex flex-col gap-0.5 min-w-[160px]">
+                              <span className="font-bold text-foreground text-xs">{item.payload.name}</span>
+                              <div className="flex justify-between text-[11px] mt-1 border-t border-border/40 pt-1">
+                                <span className="text-muted-foreground">Valor Total:</span>
+                                <span className="font-mono font-bold text-purple-500">
+                                  ${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
+                              </div>
+                              <div className="flex justify-between text-[11px]">
+                                <span className="text-muted-foreground">Productos:</span>
+                                <span className="font-mono text-muted-foreground">
+                                  {item.payload.count} {item.payload.count === 1 ? "unidad" : "unidades"}
+                                </span>
+                              </div>
+                            </div>
+                          )}
                         />
-                      </div>
-                    </div>
-                  );
-                })}
+                      }
+                    />
+                    <Bar
+                      dataKey="value"
+                      fill="url(#providerGrad)"
+                      radius={[0, 6, 6, 0]}
+                      barSize={16}
+                    />
+                  </BarChart>
+                </ChartContainer>
               </div>
             )}
           </CardContent>
