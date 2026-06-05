@@ -174,6 +174,7 @@ export const GET_DASHBOARD_DATA = gql`
     # Fetch all products with limit -1 to prevent pagination limit from skewing warehouse/inventory aggregates
     allProducts: products(limit: -1) {
       id
+      name
       price
       stock
       status

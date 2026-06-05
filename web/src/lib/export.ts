@@ -185,12 +185,24 @@ export function generateExecutivePDFReport(data: {
     `$${c.value.toLocaleString("en-US", { minimumFractionDigits: 2 })}`
   ]);
 
+  const totalCatProducts = data.categories.reduce((sum, c) => sum + (c.count || 0), 0);
+  const totalCatValue = data.categories.reduce((sum, c) => sum + (c.value || 0), 0);
+
   autoTable(doc, {
     startY: nextY + 3,
     head: catHeaders,
     body: catBody,
+    foot: [
+      [
+        "",
+        "Total",
+        `${totalCatProducts} prods`,
+        `$${totalCatValue.toLocaleString("en-US", { minimumFractionDigits: 2 })}`
+      ]
+    ],
     theme: "grid",
     headStyles: { fillColor: PRIMARY_COLOR, textColor: [255, 255, 255], fontStyle: "bold" },
+    footStyles: { fillColor: PRIMARY_COLOR, textColor: [255, 255, 255], fontStyle: "bold" },
     styles: { font: "helvetica", fontSize: 8.5 },
     columnStyles: {
       0: { cellWidth: 15, halign: "center" },
@@ -222,12 +234,24 @@ export function generateExecutivePDFReport(data: {
     `$${p.value.toLocaleString("en-US", { minimumFractionDigits: 2 })}`
   ]);
 
+  const totalProvProducts = data.providers.reduce((sum, p) => sum + (p.count || 0), 0);
+  const totalProvValue = data.providers.reduce((sum, p) => sum + (p.value || 0), 0);
+
   autoTable(doc, {
     startY: nextY + 3,
     head: provHeaders,
     body: provBody,
+    foot: [
+      [
+        "",
+        "Total",
+        `${totalProvProducts} prods`,
+        `$${totalProvValue.toLocaleString("en-US", { minimumFractionDigits: 2 })}`
+      ]
+    ],
     theme: "grid",
     headStyles: { fillColor: PRIMARY_COLOR, textColor: [255, 255, 255], fontStyle: "bold" },
+    footStyles: { fillColor: PRIMARY_COLOR, textColor: [255, 255, 255], fontStyle: "bold" },
     styles: { font: "helvetica", fontSize: 8.5 },
     columnStyles: {
       0: { cellWidth: 15, halign: "center" },
