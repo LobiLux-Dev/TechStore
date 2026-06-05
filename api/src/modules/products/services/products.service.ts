@@ -72,13 +72,15 @@ export class ProductsService {
     if (!product) {
       throw new NotFoundException(ErrorCode.DATABASE_RECORD_NOT_FOUND);
     }
-    if (product.status === ProductStatus.ACTIVE) {
+    if (product.status === ProductStatus.ACTIVE || product.status === ProductStatus.OUT_OF_STOCK) {
       throw new BadRequestException(ErrorCode.PRODUCT_ALREADY_ACTIVE);
     }
 
+    const status = product.stock === 0 ? ProductStatus.OUT_OF_STOCK : ProductStatus.ACTIVE;
+
     return this.prisma.product.update({
       where: { id },
-      data: { status: ProductStatus.ACTIVE },
+      data: { status },
     });
   }
 
