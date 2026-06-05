@@ -1,0 +1,121 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Category {
+  id: ID!
+  name: String!
+  products: [Product!]!
+  totalProducts: Int!
+  inventoryValue: Float!
+}
+
+type Provider {
+  id: ID!
+  name: String!
+  products: [Product!]!
+  totalProducts: Int!
+  inventoryValue: Float!
+}
+
+type Product {
+  id: ID!
+  name: String!
+  price: Float!
+  stock: Int!
+  status: ProductStatus!
+  provider: Provider
+  category: Category
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  OUT_OF_STOCK
+}
+
+type Query {
+  products(search: String, status: ProductStatus, minPrice: Float, maxPrice: Float, limit: Int, offset: Int, orderBy: ProductOrderBy, sortOrder: SortOrder): [Product!]!
+  product(id: Int!): Product
+  totalProducts(search: String, status: ProductStatus, minPrice: Float, maxPrice: Float): Int!
+  categories(search: String, limit: Int, offset: Int, orderBy: CategoryOrderBy, sortOrder: SortOrder): [Category!]!
+  category(id: Int!): Category
+  totalCategories(search: String): Int!
+  providers(search: String, limit: Int, offset: Int, orderBy: ProviderOrderBy, sortOrder: SortOrder): [Provider!]!
+  provider(id: Int!): Provider
+  totalProviders(search: String): Int!
+}
+
+enum ProductOrderBy {
+  id
+  name
+  price
+  stock
+  status
+}
+
+enum SortOrder {
+  asc
+  desc
+}
+
+enum CategoryOrderBy {
+  id
+  name
+}
+
+enum ProviderOrderBy {
+  id
+  name
+}
+
+type Mutation {
+  createProduct(createProductInput: CreateProductInput!): Product!
+  updateProduct(updateProductInput: UpdateProductInput!): Product!
+  activateProduct(id: Int!): Product!
+  deactivateProduct(id: Int!): Product!
+  deleteProduct(id: Int!): Product!
+  createCategory(createCategoryInput: CreateCategoryInput!): Category!
+  updateCategory(updateCategoryInput: UpdateCategoryInput!): Category!
+  deleteCategory(id: Int!): Category!
+  createProvider(createProviderInput: CreateProviderInput!): Provider!
+  updateProvider(updateProviderInput: UpdateProviderInput!): Provider!
+  deleteProvider(id: Int!): Provider!
+}
+
+input CreateProductInput {
+  name: String!
+  price: Float!
+  stock: Int!
+  status: ProductStatus
+  categoryId: Int!
+  providerId: Int!
+}
+
+input UpdateProductInput {
+  name: String
+  price: Float
+  stock: Int
+  status: ProductStatus
+  categoryId: Int
+  providerId: Int
+  id: Int!
+}
+
+input CreateCategoryInput {
+  name: String!
+}
+
+input UpdateCategoryInput {
+  name: String
+  id: Int!
+}
+
+input CreateProviderInput {
+  name: String!
+}
+
+input UpdateProviderInput {
+  name: String
+  id: Int!
+}
