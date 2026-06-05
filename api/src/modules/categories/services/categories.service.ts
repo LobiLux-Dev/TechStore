@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import type { Category, Prisma } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/infrastructure/prisma/services';
 import { SortOrder } from 'src/shared/enums';
+import { sanitizeUpdateData } from 'src/shared/utils';
 
 import { CategoryArgs, TotalCategoriesArgs } from '../dto/args';
 import { CreateCategoryInput, UpdateCategoryInput } from '../dto/inputs';
@@ -49,7 +50,7 @@ export class CategoriesService {
     const { id: _, ...data } = updateCategoryInput;
     return this.prisma.category.update({
       where: { id },
-      data,
+      data: sanitizeUpdateData(data),
     });
   }
 

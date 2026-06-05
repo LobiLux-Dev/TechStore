@@ -5,6 +5,7 @@ import type { Prisma, Product } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/infrastructure/prisma/services';
 import { ErrorCode } from 'src/shared/enums';
 import { SortOrder } from 'src/shared/enums';
+import { sanitizeUpdateData } from 'src/shared/utils';
 
 import type { ProductArgs, TotalProductsArgs } from '../dto/args';
 import { CreateProductInput, UpdateProductInput } from '../dto/inputs';
@@ -62,7 +63,7 @@ export class ProductsService {
     const { id: _, ...data } = updateProductInput;
     return this.prisma.product.update({
       where: { id },
-      data,
+      data: sanitizeUpdateData(data),
     });
   }
 

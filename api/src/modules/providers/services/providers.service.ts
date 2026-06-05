@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import type { Prisma, Provider } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/infrastructure/prisma/services';
 import { SortOrder } from 'src/shared/enums';
+import { sanitizeUpdateData } from 'src/shared/utils';
 
 import { ProviderArgs, TotalProvidersArgs } from '../dto/args';
 import { CreateProviderInput, UpdateProviderInput } from '../dto/inputs';
@@ -49,7 +50,7 @@ export class ProvidersService {
     const { id: _, ...data } = updateProviderInput;
     return this.prisma.provider.update({
       where: { id },
-      data,
+      data: sanitizeUpdateData(data),
     });
   }
 
